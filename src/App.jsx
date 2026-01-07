@@ -103,18 +103,40 @@ const App = () => {
             <Leaderboard players={leaderboard} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {SONY_CATEGORIES.map(cat => (
-                <div key={cat.id} className="bg-white p-6 rounded-[2rem] border border-neutral-100 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
-                  <div>
-                    <div className={`w-14 h-14 rounded-2xl ${cat.color} text-white flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform`}>{cat.icon}</div>
-                    <h3 className="font-black text-xl uppercase tracking-tighter mb-1">{cat.name}</h3>
-                    <p className="text-[11px] text-neutral-400 font-bold tracking-widest uppercase mb-6">{cat.products} SẢN PHẨM</p>
+              {SONY_CATEGORIES.map(cat => {
+                const hasBg = !!cat.backgroundImage;
+                const cardStyle = hasBg ? {
+                  backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.6)), url(${cat.backgroundImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                } : {};
+
+                return (
+                  <div
+                    key={cat.id}
+                    style={cardStyle}
+                    className={`p-6 rounded-[2rem] border shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between ${hasBg ? 'border-none text-white' : 'bg-white border-neutral-100'}`}
+                  >
+                    <div>
+                      <div className={`w-14 h-14 rounded-2xl ${hasBg ? 'bg-white/20 backdrop-blur-md' : cat.color} text-white flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
+                        {cat.icon}
+                      </div>
+                      <h3 className={`font-black text-xl uppercase tracking-tighter mb-1 ${hasBg ? 'text-white' : ''}`}>{cat.name}</h3>
+                      <p className={`text-[11px] font-bold tracking-widest uppercase mb-6 ${hasBg ? 'text-zinc-300' : 'text-neutral-400'}`}>{cat.products} SẢN PHẨM</p>
+                    </div>
+                    <div className={`flex items-center justify-end pt-4 border-t ${hasBg ? 'border-white/20' : 'border-neutral-50'}`}>
+                      <a
+                        href={cat.notionUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${hasBg ? 'bg-white text-black hover:bg-zinc-200' : 'bg-neutral-900 text-white group-hover:bg-black'}`}
+                      >
+                        <ChevronRight size={18} />
+                      </a>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-end pt-4 border-t border-neutral-50">
-                    <a href={cat.notionUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-neutral-900 text-white flex items-center justify-center group-hover:bg-black transition-colors"><ChevronRight size={18} /></a>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="bg-zinc-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl">

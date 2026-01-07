@@ -126,19 +126,15 @@ const App = () => {
                       cat.backgroundImage ? 'text-white/80' : 'text-neutral-400'
                     }`}>{cat.products} SẢN PHẨM</p>
                   </div>
-                  <div className={`flex items-center justify-between pt-4 border-t ${
+                  <div className={`pt-4 border-t ${
                     cat.backgroundImage ? 'border-white/20' : 'border-neutral-50'
                   }`}>
-                    <a href={cat.notionUrl} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
-                      cat.backgroundImage ? 'text-white/80 hover:text-white' : 'text-zinc-400 hover:text-black'
+                    <a href={cat.notionUrl} target="_blank" rel="noopener noreferrer" className={`w-full py-3 rounded-full flex items-center justify-center gap-2 transition-all group-hover:scale-[1.02] ${
+                      cat.backgroundImage ? 'bg-white text-black hover:bg-white/90' : 'bg-neutral-900 text-white hover:bg-black'
                     }`}>
-                      <LinkIcon size={14} /> Xem trên Notion
+                      <span className="text-[10px] font-black uppercase tracking-widest">Xem trên Notion</span>
+                      <ChevronRight size={16} />
                     </a>
-                    <button className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      cat.backgroundImage ? 'bg-white text-black group-hover:bg-white/90' : 'bg-neutral-900 text-white group-hover:bg-black'
-                    }`}>
-                      <ChevronRight size={18} />
-                    </button>
                   </div>
                 </div>
               ))}

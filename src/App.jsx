@@ -190,7 +190,6 @@ const App = () => {
         onSubmit={handleAddContribution}
       />
 
-      {!user && <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center text-white animate-pulse uppercase tracking-[0.3em] font-black italic">SONY WIKI LOADING...</div>}
     </div>
   );
 };

@@ -104,17 +104,37 @@ const App = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {SONY_CATEGORIES.map(cat => (
-                <div key={cat.id} className="bg-white p-6 rounded-[2rem] border border-neutral-100 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
+                <div
+                  key={cat.id}
+                  className={`p-6 rounded-[2rem] border shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between ${
+                    cat.backgroundImage ? 'border-transparent text-white' : 'bg-white border-neutral-100'
+                  }`}
+                  style={cat.backgroundImage ? {
+                    backgroundImage: `url(/${cat.backgroundImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  } : {}}
+                >
                   <div>
-                    <div className={`w-14 h-14 rounded-2xl ${cat.color} text-white flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform`}>{cat.icon}</div>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform ${
+                      cat.backgroundImage ? 'bg-white/20 backdrop-blur-md' : `${cat.color} text-white`
+                    }`}>
+                      {cat.icon}
+                    </div>
                     <h3 className="font-black text-xl uppercase tracking-tighter mb-1">{cat.name}</h3>
-                    <p className="text-[11px] text-neutral-400 font-bold tracking-widest uppercase mb-6">{cat.products} SẢN PHẨM</p>
+                    <p className={`text-[11px] font-bold tracking-widest uppercase mb-6 ${
+                      cat.backgroundImage ? 'text-white/80' : 'text-neutral-400'
+                    }`}>{cat.products} SẢN PHẨM</p>
                   </div>
-                  <div className="flex items-center justify-between pt-4 border-t border-neutral-50">
-                    <a href={cat.notionUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">
-                      <LinkIcon size={14} /> Xem trên Notion
+                  <div className={`pt-4 border-t ${
+                    cat.backgroundImage ? 'border-white/20' : 'border-neutral-50'
+                  }`}>
+                    <a href={cat.notionUrl} target="_blank" rel="noopener noreferrer" className={`w-full py-3 rounded-full flex items-center justify-center gap-2 transition-all group-hover:scale-[1.02] ${
+                      cat.backgroundImage ? 'bg-white text-black hover:bg-white/90' : 'bg-neutral-900 text-white hover:bg-black'
+                    }`}>
+                      <span className="text-[10px] font-black uppercase tracking-widest">Xem trên Notion</span>
+                      <ChevronRight size={16} />
                     </a>
-                    <button className="w-10 h-10 rounded-full bg-neutral-900 text-white flex items-center justify-center group-hover:bg-black transition-colors"><ChevronRight size={18} /></button>
                   </div>
                 </div>
               ))}

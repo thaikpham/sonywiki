@@ -110,11 +110,8 @@ const App = () => {
                     <h3 className="font-black text-xl uppercase tracking-tighter mb-1">{cat.name}</h3>
                     <p className="text-[11px] text-neutral-400 font-bold tracking-widest uppercase mb-6">{cat.products} SẢN PHẨM</p>
                   </div>
-                  <div className="flex items-center justify-between pt-4 border-t border-neutral-50">
-                    <a href={cat.notionUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">
-                      <LinkIcon size={14} /> Xem trên Notion
-                    </a>
-                    <button className="w-10 h-10 rounded-full bg-neutral-900 text-white flex items-center justify-center group-hover:bg-black transition-colors"><ChevronRight size={18} /></button>
+                  <div className="flex items-center justify-end pt-4 border-t border-neutral-50">
+                    <a href={cat.notionUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-neutral-900 text-white flex items-center justify-center group-hover:bg-black transition-colors"><ChevronRight size={18} /></a>
                   </div>
                 </div>
               ))}
@@ -190,7 +187,6 @@ const App = () => {
         onSubmit={handleAddContribution}
       />
 
-      {!user && <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center text-white animate-pulse uppercase tracking-[0.3em] font-black italic">SONY WIKI LOADING...</div>}
     </div>
   );
 };

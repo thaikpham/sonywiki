@@ -1,279 +1,290 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sony Trainer Dashboard - Fan Cứng Edition</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .sony-blue { background-color: #000000; }
-        .card-hover:hover { transform: translateY(-5px); transition: all 0.3s ease; }
-        .ai-gradient { background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%); }
-        @keyframes pulse-ai {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Search, 
+  Tv, 
+  Camera, 
+  Headphones, 
+  Gamepad2, 
+  Sparkles, 
+  BookOpen, 
+  Award, 
+  ChevronRight, 
+  X,
+  Menu,
+  Home,
+  MessageSquare,
+  Zap,
+  Info
+} from 'lucide-react';
+
+const SONY_CATEGORIES = [
+  { id: 'tv', name: 'TV & Soundbar', icon: <Tv size={24} />, color: 'bg-zinc-900', products: 24 },
+  { id: 'di', name: 'Digital Imaging', icon: <Camera size={24} />, color: 'bg-zinc-800', products: 42 },
+  { id: 'audio', name: 'Audio & Gear', icon: <Headphones size={24} />, color: 'bg-zinc-700', products: 30 },
+  { id: 'ps5', name: 'PlayStation 5', icon: <Gamepad2 size={24} />, color: 'bg-zinc-950', products: 12 },
+];
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('home');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isAiOpen, setIsAiOpen] = useState(false);
+  const [aiInput, setAiInput] = useState('');
+  const [aiOutput, setAiOutput] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const apiKey = ""; // Sẽ được hệ thống cung cấp tự động
+
+  // Fetch with Retry logic for Gemini API
+  const fetchWithRetry = async (url, options, retries = 5, backoff = 1000) => {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+      return res;
+    } catch (err) {
+      if (retries <= 0) throw err;
+      await new Promise(resolve => setTimeout(resolve, backoff));
+      return fetchWithRetry(url, options, retries - 1, backoff * 2);
+    }
+  };
+
+  const generateAIContent = async (type) => {
+    if (!aiInput) return;
+    setIsLoading(true);
+    setAiOutput(null);
+
+    const systemPrompt = "Bạn là trợ lý AI cao cấp dành cho Sony Trainer tại Việt Nam. Hãy gọi đội ngũ PG/PB là 'Fan cứng Sony'. Hãy sử dụng ngôn từ truyền cảm hứng, chuyên nghiệp và đầy tự hào về công nghệ Sony.";
+    
+    let prompt = "";
+    if (type === 'script') {
+      prompt = `Dựa trên sản phẩm này: "${aiInput}", hãy soạn kịch bản Sales Talk truyền cảm hứng. Bao gồm: 1. Câu hỏi phá băng. 2. 3 công nghệ độc bản của Sony. 3. Câu chốt cảm xúc.`;
+    } else {
+      prompt = `Tạo 3 câu hỏi trắc nghiệm cực khó về sản phẩm này: "${aiInput}" để thử thách trình độ 'Fan cứng Sony'. Có đáp án và giải thích kỹ thuật sâu.`;
+    }
+
+    try {
+      const response = await fetchWithRetry(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] }
+          })
         }
-        .loading-ai { animation: pulse-ai 1.5s infinite; }
-    </style>
-</head>
-<body class="bg-gray-100 font-sans text-gray-900">
+      );
 
-    <!-- Header -->
-    <header class="sony-blue text-white p-6 shadow-lg border-b border-gray-800">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <h1 class="text-2xl font-bold tracking-widest border-r pr-4 border-gray-600">SONY</h1>
-                <div>
-                    <p class="text-sm font-light tracking-tight">FAN CỨNG COMMAND CENTER</p>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest">All Categories | Vietnam</p>
-                </div>
-            </div>
-            <div class="text-right hidden md:block">
-                <p class="font-semibold text-sm" id="currentDate"></p>
-                <div class="flex items-center justify-end space-x-2 mt-1">
-                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                    <span class="text-[10px] uppercase font-bold text-gray-300 tracking-tighter">AI Service Online</span>
-                </div>
-            </div>
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      setAiOutput(text);
+    } catch (error) {
+      setAiOutput("Đã có lỗi xảy ra khi kết nối với bộ não Sony AI. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-neutral-50 text-neutral-900 pb-24 font-sans antialiased">
+      {/* Top Header */}
+      <header className="sticky top-0 z-40 bg-black text-white px-6 py-4 flex items-center justify-between border-b border-zinc-800">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl font-black tracking-tighter italic">SONY</span>
+          <div className="h-6 w-px bg-zinc-700 mx-1"></div>
+          <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Wiki Platform</span>
         </div>
-    </header>
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex flex-col items-end">
+            <span className="text-[10px] text-green-500 font-bold uppercase tracking-tighter flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> AI Service Online
+            </span>
+          </div>
+          <button className="p-2 bg-zinc-800 rounded-full">
+            <Info size={18} className="text-zinc-300" />
+          </button>
+        </div>
+      </header>
 
-    <main class="container mx-auto py-8 px-4">
+      {/* Main Content Area */}
+      <main className="max-w-4xl mx-auto p-4 md:p-8">
         
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-5 rounded-lg shadow-sm border-t-4 border-black card-hover">
-                <p class="text-xs text-gray-500 font-bold uppercase mb-1">Tổng Fan Cứng Sony</p>
-                <div class="flex items-baseline space-x-2">
-                    <h3 class="text-2xl font-black">450</h3>
-                    <span class="text-green-600 text-xs font-bold">+12%</span>
-                </div>
-            </div>
-            <div class="bg-white p-5 rounded-lg shadow-sm border-t-4 border-black card-hover">
-                <p class="text-xs text-gray-500 font-bold uppercase mb-1">Tỉ lệ Pass Quiz</p>
-                <div class="flex items-baseline space-x-2">
-                    <h3 class="text-2xl font-black">92%</h3>
-                    <span class="text-blue-600 text-xs font-bold">Tối ưu</span>
-                </div>
-            </div>
-            <div class="bg-white p-5 rounded-lg shadow-sm border-t-4 border-black card-hover">
-                <p class="text-xs text-gray-500 font-bold uppercase mb-1">Kịch bản AI đã tạo</p>
-                <div class="flex items-baseline space-x-2">
-                    <h3 class="text-2xl font-black">1.2k</h3>
-                    <span class="text-purple-600 text-xs font-bold">✨ AI</span>
-                </div>
-            </div>
-            <div class="bg-white p-5 rounded-lg shadow-sm border-t-4 border-black card-hover">
-                <p class="text-xs text-gray-500 font-bold uppercase mb-1">Thời gian tiết kiệm</p>
-                <div class="flex items-baseline space-x-2">
-                    <h3 class="text-2xl font-black">~20h</h3>
-                    <span class="text-gray-400 text-[10px]">/ Tuần</span>
-                </div>
-            </div>
+        {/* Search Bar - Sony Style */}
+        <div className="relative mb-8">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" size={20} />
+          <input 
+            type="text" 
+            placeholder="Tìm kiếm Bravia 9, Alpha 7C II, kỹ thuật sale..."
+            className="w-full bg-white border-2 border-neutral-200 rounded-2xl py-4 pl-12 pr-4 shadow-sm focus:border-black focus:ring-0 transition-all text-sm outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
-        <!-- AI COMMAND CENTER -->
-        <section class="mb-10">
-            <div class="ai-gradient text-white p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-10 opacity-10">
-                    <i class="fas fa-brain text-9xl"></i>
+        {activeTab === 'home' && (
+          <>
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+              {[
+                { label: 'Học viên', val: '450', trend: '+12%', icon: <Award className="text-yellow-500" /> },
+                { label: 'Bản tin mới', val: '12', trend: 'Hôm nay', icon: <Zap className="text-blue-500" /> },
+                { label: 'Wiki Docs', val: '850', trend: 'Full-cat', icon: <BookOpen className="text-zinc-600" /> },
+                { label: 'AI Scripts', val: '1.2k', trend: 'Hot', icon: <Sparkles className="text-purple-500" /> },
+              ].map((stat, i) => (
+                <div key={i} className="bg-white p-4 rounded-2xl border border-neutral-100 shadow-sm">
+                  <div className="flex justify-between items-start mb-2">
+                    {stat.icon}
+                    <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">{stat.trend}</span>
+                  </div>
+                  <p className="text-2xl font-black">{stat.val}</p>
+                  <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">{stat.label}</p>
                 </div>
-                
-                <div class="relative z-10">
-                    <h2 class="text-2xl font-bold mb-2 flex items-center">
-                        <i class="fas fa-sparkles mr-3 text-yellow-400"></i> AI Assistant cho Fan Cứng
-                    </h2>
-                    <p class="text-gray-400 mb-6 max-w-2xl">Dán thông số sản phẩm mới vào đây để AI tự động soạn kịch bản tư vấn truyền cảm hứng và bộ câu hỏi thử thách cho Fan Cứng Sony.</p>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <!-- Input Area -->
-                        <div class="space-y-4">
-                            <textarea id="aiInput" rows="6" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-4 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition" placeholder="Nhập thông số sản phẩm (VD: BRAVIA 9, Alpha 7C II...)"></textarea>
-                            
-                            <div class="flex flex-wrap gap-3">
-                                <button onclick="generateAI('script')" class="flex-1 bg-white text-black font-bold py-3 px-6 rounded-lg hover:bg-gray-200 transition flex items-center justify-center">
-                                    <i class="fas fa-comment-dots mr-2"></i> ✨ Soạn Sales Talk cho Fan Cứng
-                                </button>
-                                <button onclick="generateAI('quiz')" class="flex-1 bg-transparent border border-white text-white font-bold py-3 px-6 rounded-lg hover:bg-white hover:text-black transition flex items-center justify-center">
-                                    <i class="fas fa-trophy mr-2"></i> ✨ Tạo thử thách Quiz
-                                </button>
-                            </div>
-                        </div>
+              ))}
+            </div>
 
-                        <!-- Output Area -->
-                        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 min-h-[250px] relative">
-                            <div id="aiLoading" class="hidden absolute inset-0 bg-gray-900 bg-opacity-80 z-20 flex flex-center flex-col items-center justify-center rounded-xl">
-                                <i class="fas fa-circle-notch fa-spin text-3xl mb-2"></i>
-                                <p class="text-xs font-bold tracking-widest loading-ai">SONY AI ĐANG XỬ LÝ...</p>
-                            </div>
-                            <div id="aiOutput" class="text-gray-300 text-sm leading-relaxed overflow-y-auto max-h-[300px]">
-                                <div class="h-full flex flex-col items-center justify-center text-gray-600 opacity-50 py-10">
-                                    <i class="fas fa-star text-4xl mb-3"></i>
-                                    <p>Nội dung dành cho Fan Cứng sẽ hiển thị ở đây</p>
-                                </div>
-                            </div>
-                        </div>
+            {/* Category Hub */}
+            <div className="mb-10">
+              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-neutral-400 mb-6 flex items-center gap-2">
+                <div className="w-8 h-[2px] bg-black"></div> Danh mục sản phẩm
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {SONY_CATEGORIES.map((cat) => (
+                  <button 
+                    key={cat.id}
+                    className="group relative overflow-hidden bg-white rounded-3xl p-6 flex items-center justify-between border border-neutral-100 shadow-sm hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-4 z-10">
+                      <div className={`p-4 rounded-2xl ${cat.color} text-white shadow-lg group-hover:scale-110 transition-transform`}>
+                        {cat.icon}
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-black text-lg group-hover:translate-x-1 transition-transform">{cat.name}</h3>
+                        <p className="text-xs text-neutral-500 font-medium">{cat.products} sản phẩm đã cập nhật</p>
+                      </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Category Grid -->
-        <h2 class="text-xl font-bold mb-6 flex items-center">
-            <i class="fas fa-boxes mr-2"></i> Kho kiến thức Fan Cứng Sony
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <!-- TV & Soundbar -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover border border-gray-100">
-                <div class="h-24 bg-black flex items-center px-6">
-                    <i class="fas fa-tv text-white text-3xl mr-4"></i>
-                    <h3 class="text-white font-bold">TV & SOUNDBAR</h3>
-                </div>
-                <div class="p-5">
-                    <p class="text-gray-500 text-xs mb-4">BRAVIA, Cinematic Soundbar, Google TV...</p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded font-bold">24 SẢN PHẨM</span>
-                        <button class="text-xs font-bold hover:underline">CHI TIẾT <i class="fas fa-chevron-right ml-1"></i></button>
+                    <ChevronRight className="text-neutral-300 group-hover:text-black transition-colors" />
+                    {/* Decorative Background */}
+                    <div className="absolute right-[-10px] bottom-[-10px] opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
+                      {React.cloneElement(cat.icon, { size: 120 })}
                     </div>
-                </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <!-- Imaging -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover border border-gray-100">
-                <div class="h-24 bg-gray-900 flex items-center px-6">
-                    <i class="fas fa-camera text-white text-3xl mr-4"></i>
-                    <h3 class="text-white font-bold">DIGITAL IMAGING</h3>
-                </div>
-                <div class="p-5">
-                    <p class="text-gray-500 text-xs mb-4">Alpha Full-frame, ZV Series, Lenses...</p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded font-bold">42 SẢN PHẨM</span>
-                        <button class="text-xs font-bold hover:underline">CHI TIẾT <i class="fas fa-chevron-right ml-1"></i></button>
-                    </div>
-                </div>
+            {/* AI Assistant Call-to-action */}
+            <div className="bg-zinc-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden mb-10 shadow-2xl">
+              <div className="relative z-10 max-w-sm">
+                <div className="bg-purple-600 text-[10px] font-bold w-fit px-2 py-1 rounded-full mb-4 animate-pulse uppercase tracking-widest">Powered by Gemini</div>
+                <h3 className="text-2xl font-bold mb-3">Trợ lý AI cho Fan Cứng</h3>
+                <p className="text-zinc-400 text-sm mb-6 leading-relaxed">Dán thông số sản phẩm vào đây, AI sẽ soạn kịch bản tư vấn đầy đam mê và tạo Quiz thử thách trong 3 giây.</p>
+                <button 
+                  onClick={() => setIsAiOpen(true)}
+                  className="bg-white text-black font-black px-8 py-3 rounded-full hover:bg-neutral-200 transition-colors flex items-center gap-2"
+                >
+                  <Sparkles size={18} /> TRẢI NGHIỆM NGAY
+                </button>
+              </div>
+              <div className="absolute right-[-20px] top-[-20px] text-zinc-800/30">
+                <Sparkles size={240} strokeWidth={1} />
+              </div>
             </div>
+          </>
+        )}
 
-            <!-- Audio -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover border border-gray-100">
-                <div class="h-24 bg-zinc-800 flex items-center px-6">
-                    <i class="fas fa-headphones text-white text-3xl mr-4"></i>
-                    <h3 class="text-white font-bold">AUDIO & PS5</h3>
-                </div>
-                <div class="p-5">
-                    <p class="text-gray-500 text-xs mb-4">1000X, ULT Power, PlayStation 5...</p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded font-bold">30 SẢN PHẨM</span>
-                        <button class="text-xs font-bold hover:underline">CHI TIẾT <i class="fas fa-chevron-right ml-1"></i></button>
-                    </div>
-                </div>
+        {/* Placeholder for other tabs */}
+        {activeTab !== 'home' && (
+          <div className="flex flex-col items-center justify-center py-20 text-neutral-400">
+            <BookOpen size={48} className="mb-4 opacity-20" />
+            <p className="font-medium italic">Tính năng {activeTab} đang được đồng bộ dữ liệu...</p>
+          </div>
+        )}
+      </main>
+
+      {/* AI Modal Overlay */}
+      {isAiOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-white">
+          <header className="p-4 flex justify-between items-center border-b">
+            <div className="flex items-center gap-2">
+              <Sparkles className="text-purple-600" />
+              <span className="font-bold">SONY AI Assistant</span>
             </div>
-        </div>
-
-        <!-- Automation Status -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h3 class="font-bold mb-4 flex items-center text-gray-700">
-                <i class="fas fa-award mr-2 text-yellow-500"></i> Hệ thống Chứng nhận Fan Cứng Sony
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-                <div class="p-4 bg-gray-50 rounded-lg">
-                    <i class="fab fa-google-drive text-blue-500 mb-2"></i>
-                    <p class="text-[10px] font-bold text-gray-400">DATA SOURCE</p>
-                    <p class="text-xs font-semibold">Danh sách Fan Cứng</p>
-                </div>
-                <div class="p-4 bg-gray-50 rounded-lg">
-                    <i class="fas fa-magic text-purple-500 mb-2"></i>
-                    <p class="text-[10px] font-bold text-gray-400">ENGINE</p>
-                    <p class="text-xs font-semibold">AutoCrat Trigger</p>
-                </div>
-                <div class="p-4 bg-gray-50 rounded-lg">
-                    <i class="fas fa-id-badge text-red-500 mb-2"></i>
-                    <p class="text-[10px] font-bold text-gray-400">FORMAT</p>
-                    <p class="text-xs font-semibold">Bằng khen Fan Cứng v2</p>
-                </div>
-                <div class="p-4 bg-gray-50 rounded-lg">
-                    <i class="fas fa-paper-plane text-green-500 mb-2"></i>
-                    <p class="text-[10px] font-bold text-gray-400">DELIVERY</p>
-                    <p class="text-xs font-semibold">Zalo/Email tự động</p>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="mt-12 py-8 border-t border-gray-200 text-center">
-        <p class="text-gray-400 text-[10px] font-bold tracking-widest uppercase mb-2">Sony Electronics Vietnam | Community Program</p>
-        <p class="text-gray-500 text-xs">&copy; 2024 AI Training for Sony Die-hard Fans.</p>
-    </footer>
-
-    <script>
-        const apiKey = "";
-        
-        async function generateAI(type) {
-            const input = document.getElementById('aiInput').value;
-            const outputDiv = document.getElementById('aiOutput');
-            const loading = document.getElementById('aiLoading');
+            <button onClick={() => setIsAiOpen(false)} className="p-2 hover:bg-neutral-100 rounded-full">
+              <X />
+            </button>
+          </header>
+          
+          <div className="flex-1 overflow-y-auto p-6 flex flex-col">
+            <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 px-1">Nhập thông số sản phẩm</label>
+            <textarea 
+              value={aiInput}
+              onChange={(e) => setAiInput(e.target.value)}
+              placeholder="Ví dụ: Bravia 9 85 inch, Mini LED, Processor XR..."
+              className="w-full h-32 p-4 bg-neutral-50 border border-neutral-200 rounded-2xl text-sm focus:ring-0 focus:border-black resize-none mb-4"
+            />
             
-            if (!input) {
-                alert("Vui lòng nhập nội dung sản phẩm!");
-                return;
-            }
+            <div className="flex gap-2 mb-8">
+              <button 
+                onClick={() => generateAIContent('script')}
+                disabled={isLoading}
+                className="flex-1 bg-black text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isLoading ? <span className="animate-spin">🌀</span> : <MessageSquare size={18} />}
+                Soạn Sales Talk
+              </button>
+              <button 
+                onClick={() => generateAIContent('quiz')}
+                disabled={isLoading}
+                className="flex-1 border-2 border-black font-bold py-4 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isLoading ? <span className="animate-spin">🌀</span> : <Zap size={18} />}
+                Tạo Quiz
+              </button>
+            </div>
 
-            loading.classList.remove('hidden');
-            outputDiv.innerHTML = "";
+            {aiOutput && (
+              <div className="bg-neutral-900 text-zinc-100 p-6 rounded-3xl leading-relaxed whitespace-pre-line text-sm border-t-4 border-purple-500">
+                <div className="mb-4 flex items-center gap-2 text-purple-400 font-bold uppercase text-[10px] tracking-widest">
+                  <Sparkles size={14} /> Phản hồi từ SONY AI
+                </div>
+                {aiOutput}
+              </div>
+            )}
+            
+            {isLoading && (
+              <div className="flex flex-col items-center justify-center py-10">
+                <div className="w-12 h-12 border-4 border-neutral-200 border-t-black rounded-full animate-spin"></div>
+                <p className="mt-4 text-xs font-bold text-neutral-400 animate-pulse uppercase tracking-[0.2em]">Đang xử lý dữ liệu Sony...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-            let prompt = "";
-            if (type === 'script') {
-                prompt = `Bạn là một Chuyên gia Đào tạo Sản phẩm (Trainer) truyền cảm hứng tại Sony Việt Nam. 
-                Dựa trên thông tin sản phẩm: "${input}", hãy viết một kịch bản tư vấn bán hàng để "Fan cứng Sony" (chính là các bạn PG/PB) sử dụng. 
-                Kịch bản phải thể hiện niềm tự hào về công nghệ Sony. Bao gồm: 
-                1. Cách khơi gợi câu chuyện với khách hàng.
-                2. 3 tính năng "đỉnh" nhất được giải thích một cách đam mê.
-                3. Một lời kêu gọi khách hàng gia nhập cộng đồng Sony.
-                Giọng văn: Hào hứng, chuyên nghiệp, gọi người nghe là "Fan cứng Sony".`;
-            } else {
-                prompt = `Bạn là một Chuyên gia Đào tạo tại Sony. 
-                Dựa trên sản phẩm này: "${input}", hãy tạo 3 câu hỏi trắc nghiệm thử thách trình độ "Fan cứng Sony". 
-                Định dạng: Câu hỏi -> Lựa chọn A, B, C, D -> Đáp án đúng kèm giải thích ngắn gọn lý do công nghệ đó là đỉnh cao của Sony.`;
-            }
+      {/* Bottom Navigation - Mobile First */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-neutral-100 flex justify-around items-center py-3 px-2 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        {[
+          { id: 'home', label: 'Home', icon: <Home size={22} /> },
+          { id: 'wiki', label: 'Wiki', icon: <BookOpen size={22} /> },
+          { id: 'quiz', label: 'Quiz', icon: <Zap size={22} /> },
+          { id: 'awards', label: 'Profile', icon: <Award size={22} /> },
+        ].map((item) => (
+          <button 
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            className={`flex flex-col items-center gap-1 transition-all px-4 py-1 rounded-xl ${activeTab === item.id ? 'text-black' : 'text-neutral-400'}`}
+          >
+            <div className={`${activeTab === item.id ? 'scale-110' : ''} transition-transform`}>
+              {item.icon}
+            </div>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeTab === item.id ? 'opacity-100' : 'opacity-0'}`}>
+              {item.label}
+            </span>
+            {activeTab === item.id && <div className="w-1 h-1 bg-black rounded-full mt-1"></div>}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+};
 
-            try {
-                const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        systemInstruction: { parts: [{ text: "Bạn là trợ lý AI dành cho Trainer của Sony Việt Nam. Hãy gọi đội ngũ PG/PB là 'Fan cứng Sony' trong mọi câu trả lời." }] }
-                    })
-                });
-
-                const data = await response.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Không thể kết nối với AI.";
-                outputDiv.innerHTML = `<div class="prose prose-invert max-w-none">${text.replace(/\n/g, '<br>')}</div>`;
-            } catch (error) {
-                outputDiv.innerHTML = `<p class="text-red-400">Lỗi: ${error.message}</p>`;
-            } finally {
-                loading.classList.add('hidden');
-            }
-        }
-
-        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
-            try {
-                const res = await fetch(url, options);
-                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-                return res;
-            } catch (err) {
-                if (retries <= 0) throw err;
-                await new Promise(resolve => setTimeout(resolve, backoff));
-                return fetchWithRetry(url, options, retries - 1, backoff * 2);
-            }
-        }
-
-        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('vi-VN', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-        });
-    </script>
-</body>
-</html>
+export default App;

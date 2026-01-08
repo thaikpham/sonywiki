@@ -23,23 +23,37 @@ const AIGenerator = () => {
   }, [messages]);
 
   const buildInitialPrompt = () => {
-    return `Act as a Senior Product Manager and Sales Expert at Sony Electronics Vietnam. Your goal is to create a highly persuasive sales script to increase conversion rates for the Vietnamese market.
+    return `Act as a Senior Field Sales Trainer for Sony Electronics Vietnam.
+    Your audience is busy PGs (Promotion Girls) and Promoters who need a "Cheat Sheet" to sell to a customer RIGHT NOW.
 
-    Product: ${product}
-    Target Audience (Persona): ${persona}
-    Tone: ${tone}
-    Output Language: ${language}
+    INPUT CONTEXT:
+    - Product: ${product}
+    - Customer Persona: ${persona}
+    - Tone: ${tone}
+    - Language: ${language}
 
-    Instructions:
-    1. Deep Understanding: Analyze the product's USP (Unique Selling Points) relevant to the Vietnamese market and the specific needs/pain points of the ${persona}.
-    2. Structure:
-       - Hook: A compelling opening that grabs attention immediately, addressing a specific local insight or common situation in Vietnam.
-       - Value Proposition: Translate technical specs into tangible lifestyle benefits specific to the persona. Use emotional triggers.
-       - Objection Handling: Briefly address a common hesitation this persona might have.
-       - Closing: A strong, clear Call to Action (CTA) that encourages a purchase or store visit.
-    3. Style: Use natural, engaging language. If Vietnamese, use appropriate terminology (e.g., 'chốt đơn', 'siêu phẩm', but keep it professional if the tone requires). Avoid overly robotic translations.
-    4. Format: Use clear sections with emojis where appropriate to make it readable.
-    5. IMPORTANT: The output must be strictly in ${language}.`;
+    STRICT OUTPUT RULES:
+    1. NO YAPPING. No long intros. No theoretical marketing fluff.
+    2. FORMAT: Use line breaks between sections. Use emojis to make it scannable.
+    3. STYLE: "Thực chiến" (Battle-ready). Natural Vietnamese spoken language (if Vietnamese). Short, punchy sentences.
+
+    REQUIRED OUTPUT STRUCTURE:
+
+    🎯 **MỞ LỜI (HOOK):**
+    [One quick question or statement to grab this specific persona's attention instantly. Mention a pain point.]
+
+    💎 **ĐIỂM CHỐT ĐƠN (KEY SELLING POINTS):**
+    - [Emoji] **Feature 1:** [Benefit in 5 words]
+    - [Emoji] **Feature 2:** [Benefit in 5 words]
+    - [Emoji] **Feature 3:** [Benefit in 5 words]
+
+    🛡️ **XỬ LÝ TỪ CHỐI (OBJECTION HANDLING):**
+    [One sentence to answer the most likely objection from this persona.]
+
+    🔥 **CHỐT DEAL (CLOSING):**
+    [One powerful sentence to ask for the sale/trial.]
+
+    IMPORTANT: Output strictly in ${language}. Keep it under 150 words total.`;
   };
 
   const handleGenerate = async () => {

@@ -6,6 +6,7 @@ const AIGenerator = () => {
   const [product, setProduct] = useState('');
   const [persona, setPersona] = useState('Family');
   const [tone, setTone] = useState('Friendly');
+  const [language, setLanguage] = useState('Vietnamese');
   const [aiOutput, setAiOutput] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -13,7 +14,7 @@ const AIGenerator = () => {
   const handleGenerate = async () => {
      if (!product) return;
      setIsLoading(true);
-     const result = await generateSonyContent({ product, persona, tone }, 'script');
+     const result = await generateSonyContent({ product, persona, tone, language }, 'script');
      setAiOutput(result);
      setIsLoading(false);
   };
@@ -40,7 +41,7 @@ const AIGenerator = () => {
             />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-2 pl-2">Khách hàng</label>
                 <select
@@ -48,10 +49,18 @@ const AIGenerator = () => {
                 onChange={(e) => setPersona(e.target.value)}
                 className="w-full bg-white border border-neutral-200 rounded-2xl py-4 px-4 shadow-sm outline-none appearance-none"
                 >
-                <option value="Gamer">Gamer</option>
-                <option value="Family">Family</option>
-                <option value="Vlogger">Vlogger</option>
-                <option value="Audiophile">Audiophile</option>
+                <option value="Gamer">Game thủ (Gamer)</option>
+                <option value="Family">Gia đình (Family)</option>
+                <option value="Content Creator">Sáng tạo nội dung (Creator)</option>
+                <option value="Audiophile">Người yêu nhạc (Audiophile)</option>
+                <option value="Photographer">Nhiếp ảnh gia (Photographer)</option>
+                <option value="Home Cinema Enthusiast">Đam mê phim ảnh (Cinema)</option>
+                <option value="Student">Học sinh/Sinh viên</option>
+                <option value="Office Worker">Dân văn phòng (Office)</option>
+                <option value="Tech Enthusiast">Yêu công nghệ (Tech)</option>
+                <option value="Traveler">Du lịch (Traveler)</option>
+                <option value="Sports & Fitness">Thể thao (Sports)</option>
+                <option value="General Consumer">Người dùng phổ thông</option>
                 </select>
             </div>
             <div>
@@ -61,9 +70,22 @@ const AIGenerator = () => {
                 onChange={(e) => setTone(e.target.value)}
                 className="w-full bg-white border border-neutral-200 rounded-2xl py-4 px-4 shadow-sm outline-none appearance-none"
                 >
-                <option value="Friendly">Friendly</option>
-                <option value="Professional">Professional</option>
-                <option value="Technical">Technical</option>
+                <option value="Friendly">Thân thiện (Friendly)</option>
+                <option value="Professional">Chuyên nghiệp (Pro)</option>
+                <option value="Technical">Kỹ thuật (Tech)</option>
+                <option value="Enthusiastic">Hào hứng (Excited)</option>
+                <option value="Empathetic">Thấu hiểu (Empathetic)</option>
+                </select>
+            </div>
+            <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-2 pl-2">Ngôn ngữ</label>
+                <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="w-full bg-white border border-neutral-200 rounded-2xl py-4 px-4 shadow-sm outline-none appearance-none"
+                >
+                <option value="Vietnamese">Tiếng Việt</option>
+                <option value="English">English</option>
                 </select>
             </div>
             </div>

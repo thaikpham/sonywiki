@@ -1,13 +1,27 @@
-export const generateSonyContent = async (input, type) => {
+export const generateSonyContent = async (inputData, type) => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
   if (!apiKey) {
     console.error("Gemini API Key is missing");
     return "Lỗi: Chưa cấu hình Gemini API Key.";
   }
 
-  const prompt = type === 'script'
-    ? `Dựa trên sản phẩm: "${input}", soạn kịch bản Sales Talk truyền cảm hứng.`
-    : `Tạo 3 câu hỏi trắc nghiệm cực khó về sản phẩm: "${input}".`;
+  let prompt = '';
+
+  if (type === 'script') {
+    const { product, persona, tone } = inputData;
+    prompt = `Act as a professional Sony Sales Trainer. Create a sales script for product: "${product}".
+    Target Audience: ${persona}.
+    Tone: ${tone}.
+    Structure:
+    1. Hook (Attention Grabber)
+    2. Features translated to Real-world Benefits
+    3. Closing (Call to Action)
+
+    Keep it concise and impactful.`;
+  } else {
+    // Legacy support or other types
+    prompt = `Tạo 3 câu hỏi trắc nghiệm cực khó về sản phẩm: "${inputData}".`;
+  }
 
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {

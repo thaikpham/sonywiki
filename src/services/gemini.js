@@ -31,13 +31,16 @@ export const generateSonyContent = async (inputData, type) => {
     });
 
     if (!res.ok) {
-        throw new Error(`Gemini API Error: ${res.status}`);
+      const errorData = await res.json().catch(() => ({}));
+      const errorMessage = errorData.error?.message || `Status: ${res.status}`;
+      throw new Error(errorMessage);
     }
 
     const data = await res.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.";
   } catch (e) {
     console.error(e);
-    return "Lỗi AI: " + e.message;
+    // Clean up the error message for display
+    return "AI Error: " + e.message;
   }
 };

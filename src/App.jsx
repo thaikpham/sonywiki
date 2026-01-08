@@ -16,6 +16,7 @@ import Header from './components/Header';
 import Navigation from './components/Navigation';
 import AIModal from './components/AIModal';
 import ContributionModal from './components/ContributionModal';
+import ToolsTab from './components/ToolsTab';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
@@ -160,6 +161,8 @@ const App = () => {
             </div>
           </div>
         )}
+
+        {activeTab === 'tools' && <ToolsTab />}
 
         {activeTab === 'profile' && (
           <div className="animate-in slide-in-from-bottom-4 duration-500 space-y-8">
